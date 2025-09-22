@@ -3,19 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Voice Over with Download</title>
+    <title>Voice Over Generator</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <h1>Text-to-Speech Generator</h1>
-        <p>Enter your text and click "Generate" to create a downloadable voiceover.</p>
+        <p>Enter your text, select a voice, and click "Speak."</p>
 
         <textarea id="text-input" placeholder="Enter text here..."></textarea>
 
         <div class="controls">
-            <button id="generate-btn">Generate</button>
-            <a id="download-link" style="display:none;">Download Audio</a>
+            <div class="voice-selection">
+                <label for="voice-select">Choose Voice:</label>
+                <select id="voice-select"></select>
+            </div>
+            <button id="speak-btn">Speak</button>
+            <button id="stop-btn">Stop</button>
         </div>
     </div>
 
