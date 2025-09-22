@@ -1,67 +1,59 @@
 document.addEventListener('DOMContentLoaded', () => {
     const textInput = document.getElementById('text-input');
-    const voiceSelect = document.getElementById('voice-select');
-    const speakBtn = document.getElementById('speak-btn');
-    const stopBtn = document.getElementById('stop-btn');
-    const synth = window.speechSynthesis;
+    const generateBtn = document.getElementById('generate-btn');
+    const downloadLink = document.getElementById('download-link');
 
-    let voices = [];
+    // Replace this with your actual API key and endpoint
+    const API_ENDPOINT = "https://api.example.com/tts";
+    const API_KEY = "YOUR_API_KEY";
 
-    function populateVoiceList() {
-        voices = synth.getVoices();
-        voiceSelect.innerHTML = ''; // Clear previous options
-
-        let deepMaleVoiceIndex = -1;
-        const preferredVoiceName = 'Google UK English Male'; // A common deep male voice
-        
-        voices.forEach((voice, index) => {
-            const option = document.createElement('option');
-            option.textContent = `${voice.name} (${voice.lang})`;
-            option.value = voice.name;
-            voiceSelect.appendChild(option);
-
-            // Check if this is the voice we want to select
-            if (voice.name === preferredVoiceName) {
-                deepMaleVoiceIndex = index;
-            }
-        });
-
-        // Set the default voice to a deep male voice if found
-        if (deepMaleVoiceIndex !== -1) {
-            voiceSelect.selectedIndex = deepMaleVoiceIndex;
+    generateBtn.addEventListener('click', async () => {
+        const text = textInput.value.trim();
+        if (text === '') {
+            alert('Please enter some text to generate.');
+            return;
         }
-    }
 
-    // Populate voices on page load and when they change
-    populateVoiceList();
-    if (synth.onvoiceschanged !== undefined) {
-        synth.onvoiceschanged = populateVoiceList;
-    }
+        // Disable button and show loading state
+        generateBtn.disabled = true;
+        generateBtn.textContent = 'Generating...';
+        downloadLink.style.display = 'none';
 
-    speakBtn.addEventListener('click', () => {
-        if (textInput.value.trim() !== '') {
-            const utterance = new SpeechSynthesisUtterance(textInput.value);
-            const selectedVoiceName = voiceSelect.value;
-            const selectedVoice = voices.find(voice => voice.name === selectedVoiceName);
+        try {
+            // Make a request to the external TTS API
+            const response = await fetch(API_ENDPOINT, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${API_KEY}`
+                },
+                body: JSON.stringify({
+                    text: text,
+                    voice: 'deep_male' // A conceptual voice ID
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('API request failed');
+            }
+
+            // Get the audio data as a blob
+            const audioBlob = await response.blob();
             
-            if (selectedVoice) {
-                utterance.voice = selectedVoice;
-                
-                // Adjust pitch and rate for a deeper, slower tone
-                utterance.pitch = 0.8; // Lower pitch
-                utterance.rate = 0.9; // Slower rate
-                
-                synth.speak(utterance);
-            } else {
-                alert('Selected voice not found.');
-            }
-        } else {
-            alert('Please enter some text to speak.');
-        }
-    });
+            // Create a download link for the audio file
+            const audioUrl = URL.createObjectURL(audioBlob);
+            downloadLink.href = audioUrl;
+            downloadLink.download = 'voiceover.mp3';
+            downloadLink.style.display = 'block';
 
-    stopBtn.addEventListener('click', () => {
-        synth.cancel();
+        } catch (error) {
+            console.error('Error generating audio:', error);
+            alert('Failed to generate audio. Please try again.');
+        } finally {
+            generateBtn.disabled = false;
+            generateBtn.textContent = 'Generate';
+        }
     });
 });
+
 
